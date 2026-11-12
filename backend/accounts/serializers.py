@@ -1,21 +1,17 @@
-from rest_framework import serializers
-from .models import User
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework import serializers
+
+from .models import User
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
-            "id",
-            "username",
-            "email",
-            "first_name",
-            "last_name",
-            "created_at"
-        ]
-        read_only_fields=fields
+        fields = ["id", "username", "email", "first_name", "last_name", "created_at"]
+        read_only_fields = fields
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField()
@@ -25,14 +21,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
 
-        fields=[
-            "id",
-            "username",
-            "email",
-            "first_name",
-            "last_name",
-            "password"
-        ]
+        fields = ["id", "username", "email", "first_name", "last_name", "password"]
         read_only_fields = ["id"]
 
     def create(self, validated_data):
@@ -67,13 +56,12 @@ class LoginSerializer(serializers.Serializer):
         auth_user = authenticate(username=username, password=password)
 
         if auth_user is None:
-            raise serializers.ValidationError(
-                "Invalid username or password"
-            )
+            raise serializers.ValidationError("Invalid username or password")
 
         attrs["user"] = auth_user
 
         return attrs
+
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(write_only=True)

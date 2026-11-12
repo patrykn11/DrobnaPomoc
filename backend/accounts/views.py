@@ -1,10 +1,16 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, ChangePasswordSerializer
+from .serializers import (
+    ChangePasswordSerializer,
+    LoginSerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
+
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -18,6 +24,7 @@ class UserProfileView(APIView):
 
         return Response(user_data, status=200)
 
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -28,10 +35,7 @@ class RegisterView(APIView):
 
         serializer.save()
 
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED
-        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class LoginView(APIView):
@@ -46,10 +50,9 @@ class LoginView(APIView):
 
         refresh = RefreshToken.for_user(user)
 
-        return Response({
-            "access": str(refresh.access_token),
-            "refresh": str(refresh)
-        }, status=200)
+        return Response(
+            {"access": str(refresh.access_token), "refresh": str(refresh)}, status=200
+        )
 
 
 class ChangePasswordView(APIView):
@@ -57,20 +60,13 @@ class ChangePasswordView(APIView):
 
     def post(self, request):
         serializer = ChangePasswordSerializer(
-            data=request.data,
-            context={"user": request.user}
-            )
+            data=request.data, context={"user": request.user}
+        )
 
         serializer.is_valid(raise_exception=True)
 
         user = request.user
-        user.set_password(
-            serializer.validated_data["new_password"]
-        )
+        user.set_password(serializer.validated_data["new_password"])
         user.save()
 
-        return Response(
-            {"message": "Password changed successfully"},
-            status=200
-
-        )
+        return Response({"message": "Password changed successfully"}, status=200)

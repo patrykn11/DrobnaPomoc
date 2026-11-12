@@ -15,33 +15,42 @@ class AccountsApiTests(APITestCase):
         )
 
     def test_register(self):
-        response = self.client.post(reverse("register"), {
-            "username": "anna",
-            "email": "anna@example.com",
-            "first_name": "Anna",
-            "last_name": "Nowak",
-            "password": "haslo123",
-        })
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "anna",
+                "email": "anna@example.com",
+                "first_name": "Anna",
+                "last_name": "Nowak",
+                "password": "haslo123",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn("password", response.data)
 
     def test_register_rejects_weak_password(self):
-        response = self.client.post(reverse("register"), {
-            "username": "anna",
-            "email": "anna@example.com",
-            "first_name": "Anna",
-            "last_name": "Nowak",
-            "password": "123",
-        })
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "anna",
+                "email": "anna@example.com",
+                "first_name": "Anna",
+                "last_name": "Nowak",
+                "password": "123",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_login_returns_tokens(self):
-        response = self.client.post(reverse("login"), {
-            "username": "jan",
-            "password": "haslo123",
-        })
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": "jan",
+                "password": "haslo123",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
@@ -56,9 +65,12 @@ class AccountsApiTests(APITestCase):
 
     def test_change_password_rejects_same_password(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.post(reverse("change-password"), {
-            "old_password": "haslo123",
-            "new_password": "haslo123",
-        })
+        response = self.client.post(
+            reverse("change-password"),
+            {
+                "old_password": "haslo123",
+                "new_password": "haslo123",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
