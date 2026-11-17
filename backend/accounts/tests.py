@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -8,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 class AccountsApiTests(APITestCase):
     def setUp(self):
+        cache.clear()
         self.user = get_user_model().objects.create_user(
             username="jan",
             email="jan@example.com",

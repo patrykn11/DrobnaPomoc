@@ -105,6 +105,11 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_THROTTLE_RATES": {
+        "login": "5/min",
+        "register": "5/hour",
+        "change_password": "5/hour",
+    },
 }
 
 SIMPLE_JWT = {
