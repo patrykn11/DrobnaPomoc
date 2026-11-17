@@ -45,6 +45,22 @@ class AccountsApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_register_rejects_duplicate_email(self):
+        response = self.client.post(
+            reverse("register"),
+            {
+                "username": "anna",
+                "email": self.user.email,
+                "first_name": "Anna",
+                "last_name": "Nowak",
+                "password": "haslo123",
+            },
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("email", response.data)
+        self.assertEqual(get_user_model().objects.count(), 1)
+
     def test_login_returns_tokens(self):
         response = self.client.post(
             reverse("login"),
@@ -57,6 +73,19 @@ class AccountsApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("access", response.data)
         self.assertIn("refresh", response.data)
+
+    def test_login_rejects_wrong_password(self):
+        response = self.client.post(
+            reverse("login"),
+            {
+                "username": "jan",
+                "password": "wrong-password",
+            },
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn("access", response.data)
+        self.assertNotIn("refresh", response.data)
 
     def test_logout_blacklists_refresh_token(self):
         refresh = RefreshToken.for_user(self.user)
