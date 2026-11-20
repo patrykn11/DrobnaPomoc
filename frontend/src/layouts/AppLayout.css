@@ -1,0 +1,252 @@
+.app-shell {
+    min-height: 100vh;
+    background: var(--color-canvas);
+}
+
+.topbar {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 96px;
+    padding: 0 32px;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 13px;
+    color: var(--color-text);
+    white-space: nowrap;
+}
+
+.brand__mark {
+    display: grid;
+    place-items: center;
+    width: 50px;
+    height: 50px;
+    color: #fff;
+    background: var(--color-primary);
+    border-radius: 13px;
+}
+
+.brand__name {
+    font-size: 1.55rem;
+    font-weight: 800;
+}
+
+.brand__name span {
+    font-weight: 500;
+}
+
+.topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.helpline {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--color-primary-dark);
+    font-size: 1rem;
+}
+
+.user-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 50px;
+    height: 50px;
+    color: var(--color-primary-dark);
+    font-weight: 800;
+    background: var(--color-mint);
+    border-radius: 50%;
+}
+
+.logout-button {
+    min-height: 48px;
+    padding: 0 22px;
+    color: var(--color-text);
+    font-weight: 700;
+    background: #fff;
+    border: 2px solid var(--color-text);
+    border-radius: 11px;
+}
+
+.mobile-menu {
+    display: none;
+    padding: 8px;
+    color: var(--color-text);
+    background: transparent;
+    border: 0;
+}
+
+.app-shell__body {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    min-height: calc(100vh - 96px);
+}
+
+.sidebar {
+    padding: 38px 22px;
+    background: #fbfcfc;
+    border-right: 1px solid var(--color-border);
+}
+
+.sidebar nav {
+    display: grid;
+    gap: 8px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    min-height: 54px;
+    padding: 0 16px;
+    color: #303936;
+    font-weight: 600;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: 12px;
+}
+
+.nav-item--active {
+    color: var(--color-primary-dark);
+    background: var(--color-mint);
+}
+
+.sidebar__logout,
+.sidebar__mobile-heading,
+.sidebar-backdrop {
+    display: none;
+}
+
+.page-canvas {
+    min-width: 0;
+    background: var(--color-canvas);
+}
+
+@media (max-width: 900px) {
+    .topbar {
+        justify-content: flex-start;
+        gap: 8px;
+        height: 76px;
+        padding: 0 18px;
+    }
+
+    .topbar > .brand .brand__mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+    }
+
+    .topbar > .brand .brand__name {
+        font-size: 1.25rem;
+    }
+
+    .mobile-menu {
+        display: inline-flex;
+    }
+
+    .helpline,
+    .user-summary strong,
+    .logout-button {
+        display: none;
+    }
+
+    .topbar__actions {
+        margin-left: auto;
+    }
+
+    .avatar {
+        width: 42px;
+        height: 42px;
+    }
+
+    .app-shell__body {
+        display: block;
+        min-height: calc(100vh - 76px);
+    }
+
+    .sidebar {
+        position: fixed;
+        z-index: 40;
+        inset: 0 auto 0 0;
+        width: min(330px, 88vw);
+        padding: 22px;
+        transform: translateX(-105%);
+    }
+
+    .sidebar--open {
+        transform: translateX(0);
+    }
+
+    .sidebar__mobile-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
+
+    .sidebar__mobile-heading .brand__mark {
+        width: 42px;
+        height: 42px;
+    }
+
+    .sidebar__mobile-heading .brand__name {
+        font-size: 1.2rem;
+    }
+
+    .sidebar__mobile-heading button {
+        padding: 8px;
+        background: transparent;
+        border: 0;
+    }
+
+    .sidebar__logout {
+        display: block;
+        width: 100%;
+        min-height: 48px;
+        margin-top: 24px;
+        font-weight: 700;
+        background: #fff;
+        border: 2px solid var(--color-text);
+        border-radius: 10px;
+    }
+
+    .sidebar-backdrop {
+        position: fixed;
+        z-index: 30;
+        display: block;
+        background: rgba(7, 27, 23, 0.38);
+        border: 0;
+        inset: 0;
+    }
+
+    .page-canvas {
+        min-height: calc(100vh - 76px);
+    }
+}
+
+@media (max-width: 470px) {
+    .topbar > .brand .brand__mark {
+        display: none;
+    }
+
+    .topbar > .brand .brand__name {
+        font-size: 1.08rem;
+    }
+}
