@@ -1,0 +1,7 @@
+.app-loader {
+    display: grid;
+    place-content: center;
+    min-height: 100vh;
+    color: var(--color-muted);
+    background: var(--color-canvas);
+}
