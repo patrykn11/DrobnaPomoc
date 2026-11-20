@@ -48,7 +48,7 @@ export function AuthProvider({ children }) {
         try {
             await AuthService.logoutUser();
         } catch {
-
+            // user wylogowywany bez polaczenia
         }
 
         AuthService.clearTokens();
