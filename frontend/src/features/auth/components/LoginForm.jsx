@@ -16,7 +16,7 @@ export function LoginForm() {
         try {
             await login(username.trim(), password);
         } catch (requestError) {
-            if (requestError.status === 400) {
+            if (requestError.response?.status === 400) {
                 setError("Nieprawidłowa nazwa użytkownika lub hasło.");
             } else {
                 setError("Nie udało się połączyć z serwerem. Spróbuj ponownie.");

@@ -49,4 +49,28 @@ describe("App", () => {
         await waitFor(() => expect(screen.getByText("Jan Kowalski")).toBeInTheDocument());
         expect(screen.getByRole("navigation", { name: "Menu główne" })).toBeInTheDocument();
     });
+
+    it("pokazuje odpowiedni komunikat po podaniu błędnego hasła", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        api.post.mockRejectedValueOnce({
+            response: {
+                status: 400,
+                data: { detail: "Nieprawidłowe dane logowania." }
+            }
+        });
+
+        render(<App />);
+
+        fireEvent.change(await screen.findByLabelText("Nazwa użytkownika"), {
+            target: { value: "jan" }
+        });
+        fireEvent.change(screen.getByLabelText("Hasło"), {
+            target: { value: "zle-haslo" }
+        });
+        fireEvent.click(screen.getByRole("button", { name: "Zaloguj się" }));
+
+        expect(await screen.findByRole("alert")).toHaveTextContent(
+            "Nieprawidłowa nazwa użytkownika lub hasło."
+        );
+    });
 });
