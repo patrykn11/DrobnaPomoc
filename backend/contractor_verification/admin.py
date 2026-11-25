@@ -30,7 +30,7 @@ class ContractorApplicationAdmin(admin.ModelAdmin):
         "status",
         "submitted_at",
         "reviewed_by",
-        "reviewed_at"
+        "reviewed_at",
     )
     list_filter = ("status",)
     search_fields = ("contractor__username", "contractor__email")

@@ -11,7 +11,7 @@ class VerificationQuestion(models.Model):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name="created_verification_questions"
+        related_name="created_verification_questions",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -31,20 +31,17 @@ class ContractorApplication(models.Model):
     contractor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="contractor_applications"
+        related_name="contractor_applications",
     )
     status = models.CharField(
-        max_length=20,
-        choices=Status.choices,
-        default=Status.PENDING,
-        db_index=True
+        max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True
     )
     reviewed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="reviewed_contractor_applications"
+        related_name="reviewed_contractor_applications",
     )
     review_note = models.TextField(blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
@@ -56,7 +53,7 @@ class ContractorApplication(models.Model):
             models.UniqueConstraint(
                 fields=["contractor"],
                 condition=Q(status="pending"),
-                name="one_pending_application_per_contractor"
+                name="one_pending_application_per_contractor",
             )
         ]
 
@@ -66,14 +63,10 @@ class ContractorApplication(models.Model):
 
 class VerificationAnswer(models.Model):
     application = models.ForeignKey(
-        ContractorApplication,
-        on_delete=models.CASCADE,
-        related_name="answers"
+        ContractorApplication, on_delete=models.CASCADE, related_name="answers"
     )
     question = models.ForeignKey(
-        VerificationQuestion,
-        on_delete=models.PROTECT,
-        related_name="answers"
+        VerificationQuestion, on_delete=models.PROTECT, related_name="answers"
     )
     question_text = models.CharField(max_length=500)
     answer = models.TextField()
@@ -83,7 +76,7 @@ class VerificationAnswer(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["application", "question"],
-                name="unique_answer_per_application_question"
+                name="unique_answer_per_application_question",
             )
         ]
 

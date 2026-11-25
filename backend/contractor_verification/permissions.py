@@ -11,8 +11,7 @@ class IsApprovedContractor(IsContractor):
             return False
 
         return ContractorApplication.objects.filter(
-            contractor=request.user,
-            status=ContractorApplication.Status.APPROVED
+            contractor=request.user, status=ContractorApplication.Status.APPROVED
         ).exists()
 
 

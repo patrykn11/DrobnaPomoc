@@ -8,14 +8,7 @@ from .models import ContractorApplication, VerificationAnswer, VerificationQuest
 class VerificationQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = VerificationQuestion
-        fields = [
-            "id",
-            "text",
-            "is_required",
-            "is_active",
-            "order",
-            "created_at"
-        ]
+        fields = ["id", "text", "is_required", "is_active", "order", "created_at"]
         read_only_fields = ["id", "is_active", "created_at"]
 
 
@@ -37,18 +30,12 @@ class VerificationAnswerSerializer(serializers.ModelSerializer):
 
 class ContractorApplicationSerializer(serializers.ModelSerializer):
     contractor_name = serializers.CharField(
-        source="contractor.get_full_name",
-        read_only=True
+        source="contractor.get_full_name", read_only=True
     )
-    contractor_email = serializers.EmailField(
-        source="contractor.email",
-        read_only=True
-    )
+    contractor_email = serializers.EmailField(source="contractor.email", read_only=True)
     answers = VerificationAnswerSerializer(many=True, read_only=True)
     reviewed_by = serializers.CharField(
-        source="reviewed_by.get_full_name",
-        read_only=True,
-        allow_null=True
+        source="reviewed_by.get_full_name", read_only=True, allow_null=True
     )
 
     class Meta:
@@ -63,7 +50,7 @@ class ContractorApplicationSerializer(serializers.ModelSerializer):
             "reviewed_by",
             "review_note",
             "submitted_at",
-            "reviewed_at"
+            "reviewed_at",
         ]
         read_only_fields = fields
 
@@ -80,8 +67,7 @@ class SubmitApplicationSerializer(serializers.Serializer):
 
         required_ids = set(
             VerificationQuestion.objects.filter(
-                is_active=True,
-                is_required=True
+                is_active=True, is_required=True
             ).values_list("id", flat=True)
         )
         if not VerificationQuestion.objects.filter(is_active=True).exists():
@@ -116,7 +102,7 @@ class SubmitApplicationSerializer(serializers.Serializer):
                     application=application,
                     question=item["question"],
                     question_text=item["question"].text,
-                    answer=item["answer"]
+                    answer=item["answer"],
                 )
                 for item in validated_data["answers"]
             ]
@@ -132,7 +118,7 @@ class ReviewApplicationSerializer(serializers.ModelSerializer):
     def validate_status(self, value):
         if value not in {
             ContractorApplication.Status.APPROVED,
-            ContractorApplication.Status.REJECTED
+            ContractorApplication.Status.REJECTED,
         }:
             raise serializers.ValidationError("Wybierz decyzję approved albo rejected.")
         return value
@@ -148,11 +134,6 @@ class ReviewApplicationSerializer(serializers.ModelSerializer):
         instance.reviewed_by = self.context["request"].user
         instance.reviewed_at = timezone.now()
         instance.save(
-            update_fields=[
-                "status",
-                "review_note",
-                "reviewed_by",
-                "reviewed_at"
-            ]
+            update_fields=["status", "review_note", "reviewed_by", "reviewed_at"]
         )
         return instance

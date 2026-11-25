@@ -21,6 +21,7 @@ class QuestionListView(APIView):
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class MyApplicationsView(APIView):
     permission_classes = [IsAuthenticated, IsContractor]
 
@@ -39,8 +40,7 @@ class MyApplicationsView(APIView):
 
     def post(self, request):
         serializer = verification_serializers.SubmitApplicationSerializer(
-            data=request.data,
-            context={"request": request}
+            data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
 
@@ -49,7 +49,7 @@ class MyApplicationsView(APIView):
         except IntegrityError:
             return Response(
                 {"detail": "Masz już zgłoszenie oczekujące na weryfikację."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         output = verification_serializers.ContractorApplicationSerializer(application)
@@ -72,7 +72,7 @@ class ConsultantApplicationsView(APIView):
             if requested_status not in valid_statuses:
                 return Response(
                     {"status": "Nieprawidłowy status zgłoszenia."},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
             applications = applications.filter(status=requested_status)
 
@@ -90,17 +90,14 @@ class ReviewApplicationView(APIView):
     @transaction.atomic
     def patch(self, request, pk):
         application = get_object_or_404(
-            ContractorApplication.objects.select_for_update(),
-            pk=pk
+            ContractorApplication.objects.select_for_update(), pk=pk
         )
         serializer = verification_serializers.ReviewApplicationSerializer(
-            application,
-            data=request.data,
-            context={"request": request}
+            application, data=request.data, context={"request": request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
             verification_serializers.ContractorApplicationSerializer(application).data,
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )

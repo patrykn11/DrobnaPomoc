@@ -16,13 +16,13 @@ class ContractorVerificationApiTests(APITestCase):
             username="consultant",
             email="consultant@example.com",
             password="haslo123",
-            role=User.Role.CONSULTANT
+            role=User.Role.CONSULTANT,
         )
         self.contractor = user_model.objects.create_user(
             username="contractor",
             email="contractor@example.com",
             password="haslo123",
-            role=User.Role.CONTRACTOR
+            role=User.Role.CONTRACTOR,
         )
         self.question = VerificationQuestion.objects.create(
             text="Jakie masz doświadczenie?", created_by=self.consultant
@@ -33,7 +33,7 @@ class ContractorVerificationApiTests(APITestCase):
 
         response = self.client.post(
             reverse("verification-questions"),
-            {"text": "Czy posiadasz uprawnienia?", "is_required": True, "order": 2}
+            {"text": "Czy posiadasz uprawnienia?", "is_required": True, "order": 2},
         )
 
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -66,11 +66,11 @@ class ContractorVerificationApiTests(APITestCase):
                 "answers": [
                     {
                         "question": self.question.pk,
-                        "answer": "Mam pięć lat doświadczenia."
+                        "answer": "Mam pięć lat doświadczenia.",
                     }
                 ]
             },
-            format="json"
+            format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -94,7 +94,7 @@ class ContractorVerificationApiTests(APITestCase):
 
         response = self.client.patch(
             reverse("review-application", args=[application.pk]),
-            {"status": "approved", "review_note": "Weryfikacja poprawna."}
+            {"status": "approved", "review_note": "Weryfikacja poprawna."},
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -115,8 +115,7 @@ class ContractorVerificationApiTests(APITestCase):
 
     def test_consultant_sees_newest_applications_first(self):
         older_application = ContractorApplication.objects.create(
-            contractor=self.contractor,
-            status=ContractorApplication.Status.REJECTED
+            contractor=self.contractor, status=ContractorApplication.Status.REJECTED
         )
         newer_application = ContractorApplication.objects.create(
             contractor=self.contractor
@@ -126,20 +125,15 @@ class ContractorVerificationApiTests(APITestCase):
         response = self.client.get(reverse("verification-applications"))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        returned_ids = [
-            application["id"] for application in response.data["results"]
-        ]
-        self.assertEqual(
-            returned_ids[:2],
-            [newer_application.id, older_application.id]
-        )
+        returned_ids = [application["id"] for application in response.data["results"]]
+        self.assertEqual(returned_ids[:2], [newer_application.id, older_application.id])
 
     def test_consultant_applications_are_paginated(self):
         ContractorApplication.objects.bulk_create(
             [
                 ContractorApplication(
                     contractor=self.contractor,
-                    status=ContractorApplication.Status.REJECTED
+                    status=ContractorApplication.Status.REJECTED,
                 )
                 for _ in range(21)
             ]
@@ -154,28 +148,19 @@ class ContractorVerificationApiTests(APITestCase):
         self.assertIsNotNone(response.data["next"])
 
     def test_application_cannot_be_reviewed_twice(self):
-        application = ContractorApplication.objects.create(
-            contractor=self.contractor
-        )
+        application = ContractorApplication.objects.create(contractor=self.contractor)
         self.client.force_authenticate(user=self.consultant)
         review_url = reverse("review-application", args=[application.pk])
 
-        first_response = self.client.patch(
-            review_url,
-            {"status": "approved"}
-        )
-        second_response = self.client.patch(
-            review_url,
-            {"status": "rejected"}
-        )
+        first_response = self.client.patch(review_url, {"status": "approved"})
+        second_response = self.client.patch(review_url, {"status": "rejected"})
 
         self.assertEqual(first_response.status_code, status.HTTP_200_OK)
         self.assertEqual(second_response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_approved_application_grants_contractor_permission(self):
         application = ContractorApplication.objects.create(
-            contractor=self.contractor,
-            status=ContractorApplication.Status.APPROVED
+            contractor=self.contractor, status=ContractorApplication.Status.APPROVED
         )
         request = type("Request", (), {"user": self.contractor})()
 
