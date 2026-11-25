@@ -10,6 +10,7 @@ from .serializers import (
     ChangePasswordSerializer,
     LoginSerializer,
     RegisterSerializer,
+    SelectRoleSerializer,
     UserSerializer,
 )
 
@@ -25,6 +26,19 @@ class UserProfileView(APIView):
         user_data["id"] = user.id
 
         return Response(user_data, status=200)
+
+
+class SelectRoleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        serializer = SelectRoleSerializer(
+            request.user,
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
 
 
 class RegisterView(APIView):
@@ -68,7 +82,7 @@ class LogoutView(APIView):
         refresh_token = request.data.get("refresh")
         if not refresh_token:
             return Response(
-                {"refresh": "This field is required."},
+                {"refresh": "To pole jest wymagane."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -76,7 +90,7 @@ class LogoutView(APIView):
             RefreshToken(refresh_token).blacklist()
         except TokenError:
             return Response(
-                {"refresh": "Invalid or expired token."},
+                {"refresh": "Token jest nieprawidłowy lub wygasł."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -99,4 +113,4 @@ class ChangePasswordView(APIView):
         user.set_password(serializer.validated_data["new_password"])
         user.save()
 
-        return Response({"message": "Password changed successfully"}, status=200)
+        return Response({"message": "Hasło zostało zmienione."}, status=200)

@@ -6,6 +6,8 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .models import ContractorProfile, User
+
 
 class AccountsApiTests(APITestCase):
     def setUp(self):
@@ -26,12 +28,14 @@ class AccountsApiTests(APITestCase):
                 "email": "anna@example.com",
                 "first_name": "Anna",
                 "last_name": "Nowak",
+                "phone_number": "+48123456789",
                 "password": "haslo123",
             },
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn("password", response.data)
+        self.assertEqual(response.data["phone_number"], "+48123456789")
 
     def test_register_rejects_weak_password(self):
         response = self.client.post(
@@ -106,6 +110,67 @@ class AccountsApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["username"], "jan")
+        self.assertEqual(response.data["role"], User.Role.UNDEFINED)
+
+    def test_user_can_select_contractor_role(self):
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.patch(
+            reverse("select-role"),
+            {"role": User.Role.CONTRACTOR},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.role, User.Role.CONTRACTOR)
+        self.assertTrue(ContractorProfile.objects.filter(user=self.user).exists())
+
+    def test_contractor_profile_stores_service_area(self):
+        profile = ContractorProfile.objects.create(
+            user=self.user,
+            city="Warszawa",
+            service_radius_km=30,
+        )
+
+        self.assertEqual(profile.city, "Warszawa")
+        self.assertEqual(profile.service_radius_km, 30)
+
+    def test_selecting_client_role_does_not_create_contractor_profile(self):
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.patch(
+            reverse("select-role"),
+            {"role": User.Role.CLIENT},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.role, User.Role.CLIENT)
+        self.assertFalse(ContractorProfile.objects.filter(user=self.user).exists())
+
+    def test_user_cannot_change_selected_role(self):
+        self.user.role = User.Role.CLIENT
+        self.user.save(update_fields=["role"])
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.patch(
+            reverse("select-role"),
+            {"role": User.Role.CONTRACTOR},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.role, User.Role.CLIENT)
+
+    def test_user_cannot_select_consultant_role(self):
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.patch(
+            reverse("select-role"),
+            {"role": User.Role.CONSULTANT},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_change_password_rejects_same_password(self):
         self.client.force_authenticate(user=self.user)
