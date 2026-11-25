@@ -30,7 +30,6 @@
     max-width: 600px;
 }
 
-/* Przełącznik ról (poziomy pasek) */
 .role-switcher {
     display: flex;
     gap: 12px;
@@ -85,7 +84,6 @@
     font-weight: 500;
 }
 
-/* Kontener widoków roli */
 .home-content {
     display: flex;
     flex-direction: column;
@@ -118,7 +116,6 @@
     color: var(--color-muted);
 }
 
-/* Responsywność */
 @media (max-width: 768px) {
     .role-switcher {
         flex-direction: column;
