@@ -1,4 +1,6 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
@@ -6,11 +8,14 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .models import ContractorProfile, Role
 from .serializers import (
     ChangePasswordSerializer,
+    ContractorProfileUpdateSerializer,
     LoginSerializer,
     RegisterSerializer,
     UserSerializer,
+    UserUpdateSerializer,
 )
 
 
@@ -68,7 +73,7 @@ class LogoutView(APIView):
         refresh_token = request.data.get("refresh")
         if not refresh_token:
             return Response(
-                {"refresh": "This field is required."},
+                {"refresh": "To pole jest wymagane."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -76,7 +81,7 @@ class LogoutView(APIView):
             RefreshToken(refresh_token).blacklist()
         except TokenError:
             return Response(
-                {"refresh": "Invalid or expired token."},
+                {"refresh": "Token jest nieprawidłowy lub wygasł."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -99,4 +104,39 @@ class ChangePasswordView(APIView):
         user.set_password(serializer.validated_data["new_password"])
         user.save()
 
-        return Response({"message": "Password changed successfully"}, status=200)
+        return Response({"message": "Hasło zostało zmienione."}, status=200)
+
+
+class UserUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        serializer = UserUpdateSerializer(
+            instance=request.user, data=request.data, partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        return Response(serializer.data)
+
+
+class ContractorProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+
+        if not request.user.has_role(Role.Code.CONTRACTOR):
+            raise PermissionDenied
+
+        profile = get_object_or_404(ContractorProfile, user=request.user)
+
+        serializer_profile = ContractorProfileUpdateSerializer(
+            instance=profile, data=request.data, partial=True
+        )
+        serializer_profile.is_valid(raise_exception=True)
+
+        serializer_profile.save()
+
+        return Response(serializer_profile.data)
