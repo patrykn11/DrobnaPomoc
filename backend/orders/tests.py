@@ -45,7 +45,6 @@ class ServiceCategoryModelTest(TestCase):
                     min_price=Decimal("-10.00"),
                 )
 
-
     def test_negative_max_price_raises_error(self):
         with self.assertRaises(IntegrityError):
             with transaction.atomic():
