@@ -14,11 +14,12 @@ class Offer(models.Model):
 
     order = models.ForeignKey(
         "orders.Order",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="offers",
         verbose_name="Zlecenie",
     )
     # TODO: ContractorProfile (feat/contractor-verification)
+    # TODO: przy usuwaniu konta (WU-03/RODO) anonimizować użytkownika zamiast fizycznego DELETE
     contractor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

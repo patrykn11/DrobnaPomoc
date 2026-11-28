@@ -42,6 +42,10 @@ class ServiceCategory(models.Model):
                 name="service_category_min_price_non_negative",
             ),
             models.CheckConstraint(
+                condition=models.Q(max_price__isnull=True) | models.Q(max_price__gte=0),
+                name="service_category_max_price_non_negative",
+            ),
+            models.CheckConstraint(
                 condition=models.Q(max_price__isnull=True)
                 | models.Q(min_price__isnull=True)
                 | models.Q(max_price__gte=models.F("min_price")),
@@ -73,6 +77,7 @@ class Order(models.Model):
         ONLINE = "ONLINE", "Płatność online"
         CASH = "CASH", "Gotówka"
 
+    # TODO: przy usuwaniu konta (WU-03/RODO) anonimizować użytkownika zamiast fizycznego DELETE
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
@@ -137,6 +142,7 @@ class Order(models.Model):
         default=None,
         verbose_name="Metoda płatności",
     )
+    # TODO: przy usuwaniu konta (WU-03/RODO) anonimizować użytkownika zamiast fizycznego DELETE
     contractor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -162,7 +168,7 @@ class Order(models.Model):
         ordering = ["-created_at"]
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(recipient_name="")
+                condition=(models.Q(recipient_name="") & models.Q(recipient_phone=""))
                 | models.Q(recipient_consent=True),
                 name="order_recipient_consent_required",
             ),

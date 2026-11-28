@@ -15,4 +15,5 @@ class OfferAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("status",)
+    list_select_related = ("order", "order__category", "contractor")
     raw_id_fields = ("order", "contractor")

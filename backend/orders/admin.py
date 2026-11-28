@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from offers.models import Offer
 
 from .models import Order, ServiceCategory
@@ -34,6 +33,7 @@ class OrderAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("status", "channel", "category", "payment_method")
+    list_select_related = ("category", "created_by", "contractor")
     search_fields = ("description", "city", "street", "recipient_name")
     raw_id_fields = ("created_by", "contractor")
     inlines = [OfferInline]
