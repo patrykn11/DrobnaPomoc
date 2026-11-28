@@ -25,6 +25,7 @@ class Offer(models.Model):
     )
     # TODO: ContractorProfile (feat/contractor-verification)
     # TODO: przy usuwaniu konta (WU-03/RODO) anonimizować użytkownika zamiast fizycznego DELETE
+    # TODO: w offers/services.py odrzucać złożenie oferty, gdy contractor == order.created_by
     contractor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,

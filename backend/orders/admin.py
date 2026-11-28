@@ -8,8 +8,18 @@ from .models import Order, ServiceCategory
 class OfferInline(admin.TabularInline):
     model = Offer
     extra = 0
-    readonly_fields = ("contractor", "price", "proposed_date", "status", "created_at")
+    readonly_fields = (
+        "contractor",
+        "price",
+        "proposed_date",
+        "comment",
+        "status",
+        "created_at",
+    )
     can_delete = False
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(ServiceCategory)
