@@ -34,7 +34,7 @@ export function HomePage() {
 
                 <div
                     className="role-switcher"
-                    role="tablist"
+                    role="group"
                     aria-label="Wybierz rolę użytkownika"
                 >
                     {ROLES.map((role) => {
@@ -43,8 +43,7 @@ export function HomePage() {
                             <button
                                 key={role.id}
                                 type="button"
-                                role="tab"
-                                aria-selected={isSelected}
+                                aria-pressed={isSelected}
                                 className={`role-tab ${isSelected ? "role-tab--active" : ""}`}
                                 onClick={() => setSelectedRole(role.id)}
                             >
