@@ -1,8 +1,13 @@
+import secrets
 from decimal import Decimal
 
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
+
+
+def generate_visit_code() -> str:
+    return f"{secrets.randbelow(10000):04d}"
 
 
 class Offer(models.Model):
@@ -69,3 +74,79 @@ class Offer(models.Model):
 
     def __str__(self) -> str:
         return f"Oferta #{self.pk} do zlecenia #{self.order_id} ({self.price} zł)"
+
+
+class Visit(models.Model):
+    class Status(models.TextChoices):
+        SCHEDULED = "SCHEDULED", "Zaplanowana"
+        IN_PROGRESS = "IN_PROGRESS", "W trakcie"
+        COMPLETED = "COMPLETED", "Zakończona"
+        CANCELLED = "CANCELLED", "Anulowana"
+
+    offer = models.ForeignKey(
+        Offer,
+        on_delete=models.PROTECT,
+        related_name="visits",
+        verbose_name="Oferta",
+    )
+    scheduled_date = models.DateField(verbose_name="Zaplanowana data")
+    code = models.CharField(
+        max_length=4,
+        default=generate_visit_code,
+        editable=False,
+        validators=[RegexValidator(r"^\d{4}$")],
+        verbose_name="Kod wizyty",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.SCHEDULED,
+        verbose_name="Status",
+    )
+    started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name="Rozpoczęto",
+    )
+    finished_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name="Zakończono",
+    )
+    cancel_reason = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="Powód anulowania",
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Utworzono")
+
+    class Meta:
+        verbose_name = "Wizyta"
+        verbose_name_plural = "Wizyty"
+        ordering = ["-created_at"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(code__regex=r"^\d{4}$"),
+                name="check_visit_code_4_digits",
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(status="CANCELLED") | ~models.Q(cancel_reason=""),
+                name="check_cancel_reason_when_cancelled",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(started_at__isnull=True)
+                | models.Q(finished_at__isnull=True)
+                | models.Q(finished_at__gte=models.F("started_at")),
+                name="check_visit_finished_at_gte_started_at",
+            ),
+            models.UniqueConstraint(
+                fields=["offer"],
+                condition=~models.Q(status="CANCELLED"),
+                name="unique_active_visit_per_offer",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"Wizyta #{self.pk} do oferty #{self.offer_id} ({self.get_status_display()})"

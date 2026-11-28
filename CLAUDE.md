@@ -43,7 +43,12 @@ CI (`.github/workflows/`) runs black/ruff/makemigrations --check/tests for the b
 
 ## Architecture
 
-**Backend.** `config/` is the Django project; domain code lives in apps (currently only `accounts`). `AUTH_USER_MODEL = "accounts.User"` (AbstractUser with unique email). DRF defaults are JWT auth (simplejwt) and `IsAuthenticated` for every view — public endpoints must explicitly set `permission_classes = [AllowAny]`. Rate limiting uses `ScopedRateThrottle` with scopes defined in `REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]`; tests call `cache.clear()` in `setUp` to reset throttles. Refresh tokens rotate and are blacklisted after rotation/logout (`token_blacklist` app).
+**Backend.** `config/` is the Django project; domain code lives in apps:
+- `accounts` — custom `AUTH_USER_MODEL = "accounts.User"` (`AbstractUser` with unique email), JWT auth and password management.
+- `orders` — `ServiceCategory` (seeded with 6 default categories via data migration) and `Order` (statuses, channels, address split into fields with `city` as the only pre-acceptance location field, optional photo under `MEDIA_URL`/`MEDIA_ROOT`, and recipient consent DB constraint).
+- `offers` — `Offer` (positive price check, at most one `ACCEPTED` offer per order and one non-withdrawn offer per contractor/order) and `Visit` (auto-generated 4-digit code via `secrets`, `cancel_reason` required when `CANCELLED`, timestamp ordering check, at most one active visit per offer).
+
+DRF defaults are JWT auth (simplejwt) and `IsAuthenticated` for every view — public endpoints must explicitly set `permission_classes = [AllowAny]`. Rate limiting uses `ScopedRateThrottle` with scopes defined in `REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]`; tests call `cache.clear()` in `setUp` to reset throttles. Refresh tokens rotate and are blacklisted after rotation/logout (`token_blacklist` app).
 
 API routes: `/api/token/`, `/api/token/refresh/`, `/api/token/verify/` (simplejwt), and `/api/accounts/{register,login,logout,me,change-password}/`. Login returns `{access, refresh}`; logout blacklists the posted refresh token.
 
