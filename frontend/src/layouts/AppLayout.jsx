@@ -24,7 +24,7 @@ function displayName(user) {
     return fullName || user?.username;
 }
 
-export function AppLayout() {
+export function AppLayout({ children }) {
     const { user, logout } = useAuth();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -101,7 +101,9 @@ export function AppLayout() {
                     </button>
                 </aside>
 
-                <main className="page-canvas" aria-label="Strona główna" />
+                <main className="page-canvas">
+                    {children}
+                </main>
             </div>
         </div>
     );
