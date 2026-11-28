@@ -234,13 +234,21 @@ class VisitModelTest(TestCase):
     def test_finished_after_or_equal_started_succeeds(self):
         started = datetime(2026, 12, 10, 12, 0, tzinfo=timezone.utc)
         finished = datetime(2026, 12, 10, 13, 30, tzinfo=timezone.utc)
+
+        # Przypadek równy (finished_at == started_at)
         visit = Visit.objects.create(
             offer=self.offer,
             scheduled_date=date(2026, 12, 10),
             status=Visit.Status.COMPLETED,
             started_at=started,
-            finished_at=finished,
+            finished_at=started,
         )
+        self.assertEqual(visit.finished_at, started)
+
+        # Przypadek późniejszy (finished_at > started_at)
+        visit.finished_at = finished
+        visit.save(update_fields=["finished_at"])
+        visit.refresh_from_db()
         self.assertEqual(visit.finished_at, finished)
 
     def test_only_one_active_visit_per_offer_and_cancelled_allows_new(self):
