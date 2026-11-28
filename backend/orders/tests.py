@@ -40,4 +40,3 @@ class ServiceCategoryModelTest(TestCase):
                     name="Ujemna kategoria",
                     min_price=Decimal("-10.00"),
                 )
-

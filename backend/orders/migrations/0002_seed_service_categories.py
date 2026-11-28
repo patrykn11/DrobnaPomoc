@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 from django.db import migrations
 
 CATEGORIES = [
@@ -63,4 +64,3 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(seed_categories, reverse_code=remove_categories),
     ]
-
