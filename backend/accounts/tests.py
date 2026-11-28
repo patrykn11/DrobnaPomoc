@@ -6,6 +6,9 @@ from rest_framework.test import APITestCase
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .models import ContractorProfile, Role
+from .permissions import IsClient
+
 
 class AccountsApiTests(APITestCase):
     def setUp(self):
@@ -26,12 +29,14 @@ class AccountsApiTests(APITestCase):
                 "email": "anna@example.com",
                 "first_name": "Anna",
                 "last_name": "Nowak",
+                "phone_number": "+48123456789",
                 "password": "haslo123",
             },
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertNotIn("password", response.data)
+        self.assertEqual(response.data["phone_number"], "+48123456789")
 
     def test_register_rejects_weak_password(self):
         response = self.client.post(
@@ -106,6 +111,31 @@ class AccountsApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["username"], "jan")
+        self.assertEqual(response.data["roles"], [Role.Code.CLIENT])
+        self.assertFalse(response.data["is_consultant"])
+        self.assertFalse(response.data["is_contractor"])
+
+    def test_new_user_receives_client_role(self):
+        request = type("Request", (), {"user": self.user})()
+
+        self.assertTrue(IsClient().has_permission(request, None))
+
+    def test_user_can_have_multiple_roles(self):
+        contractor_role, _ = Role.objects.get_or_create(code=Role.Code.CONTRACTOR)
+        self.user.roles.add(contractor_role)
+
+        self.assertTrue(self.user.has_role(Role.Code.CLIENT))
+        self.assertTrue(self.user.has_role(Role.Code.CONTRACTOR))
+
+    def test_contractor_profile_stores_service_area(self):
+        profile = ContractorProfile.objects.create(
+            user=self.user,
+            city="Warszawa",
+            service_radius_km=30,
+        )
+
+        self.assertEqual(profile.city, "Warszawa")
+        self.assertEqual(profile.service_radius_km, 30)
 
     def test_change_password_rejects_same_password(self):
         self.client.force_authenticate(user=self.user)
