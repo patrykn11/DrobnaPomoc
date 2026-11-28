@@ -71,5 +71,5 @@ describe("HomePage", () => {
         render(<HomePage />);
 
         expect(screen.getByRole("button", { name: "Zadzwoń do konsultanta" })).toBeInTheDocument();
-    });v
+    });
 });
